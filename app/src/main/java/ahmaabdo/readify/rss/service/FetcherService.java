@@ -61,6 +61,10 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Xml;
 import android.widget.Toast;
+import android.app.Notification;
+import android.support.v4.app.NotificationCompat;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -127,6 +131,25 @@ public class FetcherService extends IntentService {
         HttpURLConnection.setFollowRedirects(true);
         mHandler = new Handler();
     }
+	
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (Build.VERSION.SDK_INT >= 26) {
+            String CHANNEL_ID = FetcherService.class.getSimpleName();
+            String CHANNEL_NAME = "Readify Fetcher";
+
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    CHANNEL_NAME,NotificationManager.IMPORTANCE_NONE);
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setCategory(Notification.CATEGORY_SERVICE).setPriority(Notification.PRIORITY_MIN).build();
+
+            startForeground(101, notification);
+        }
+    }
+
 
     public static boolean hasMobilizationTask(long entryId) {
         Cursor cursor = MainApplication.getContext().getContentResolver().query(TaskColumns.CONTENT_URI, TaskColumns.PROJECTION_ID,
